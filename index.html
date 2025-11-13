@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Import Google Font (Inter) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+<!-- Import Boxicons (which you use in your main site) -->
+<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+<style>
+        /* Basic reset and font application */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f4f4; /* A light background to see the chat button */
+        }
+
+        /* Chatbot Toggle Button (FAB) */
+        .chat-toggle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background-color: #222; /* Matches the dark text/icons of your site */
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            z-index: 1000;
+        }
+
+        .chat-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Chat Window */
+        .chat-window {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 350px;
+            max-width: 90vw;
+            height: 480px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 999;
+            
+            /* Hidden state */
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .chat-window.open {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        /* Chat Header */
+        .chat-header {
+            background-color: #f7f7f7;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h4 {
+            font-weight: 700;
+            color: #333;
+        }
+
+        .chat-header .chat-close {
+            font-size: 24px;
+            color: #888;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .chat-header .chat-close:hover {
+            color: #333;
+        }
+
+        /* Chat Body (Messages) */
+        .chat-body {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chat-message {
+            display: flex;
+            max-width: 90%;
+        }
+
+        .chat-message.user {
+            justify-content: flex-end;
+            align-self: flex-end;
+        }
+
+        .chat-message.bot {
+            justify-content: flex-start;
+            align-self: flex-start;
+        }
+
+        .chat-message .bubble {
+            padding: 10px 15px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .chat-message.user .bubble {
+            background-color: #333;
+            color: #fff;
+            border-bottom-right-radius: 5px;
+        }
+
+        .chat-message.bot .bubble {
+            background-color: #f1f1f1;
+            color: #333;
+            border-bottom-left-radius: 5px;
+        }
+
+        /* Chat Footer (Input) */
+        .chat-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #e0e0e0;
+            background-color: #f7f7f7;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-footer input {
+            flex-grow: 1;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 10px 15px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-footer input:focus {
+            border-color: #555;
+        }
+
+        .chat-footer .chat-send {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #333;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 5px; /* Easier to click */
+        }
+
+        .chat-footer .chat-send:hover {
+            color: #000;
+        }
+
+    </style>
+</head>
+<body>
+    <section class=" top-txt ">
+        <div class="head container ">
+            <div class="head-txt ">
+                <p>Free shipping, 30-day return or refund guarantee.</p>
+            </div>
+            <div class="sing_in_up ">
+                <a href="# ">SIGN IN</a>
+                <a href="# ">SIGN UP</a>
+            </div>
+        </div>
+    </section>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <input type="checkbox" name="" id="checkbox">
+            <div class="hamburger-lines">
+                <span class="line line1"></span>
+                <span class="line line2"></span>
+                <span class="line line3"></span>
+            </div>
+            <ul class="menu-items">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#sellers">Shop</a></li>
+                <li><a href="#news">Blog</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="logo">
+                <img src="https://i.postimg.cc/TP6JjSTt/logo.webp" alt="">
+            </div>
+        </div>
+    </nav>
+    <section id="home">
+        <div class="home_page ">
+            <div class="home_img ">
+                <img src="https://i.postimg.cc/t403yfn9/home2.jpg" alt="img ">
+            </div>
+            <div class="home_txt ">
+                <p class="collectio ">SUMMER COLLECTION</p>
+                <h2>FALL - WINTER<br>Collection 2023</h2>
+                <div class="home_label ">
+                    <p>A specialist label creating luxury essentials. Ethically crafted<br>with an unwavering commitment to exceptional quality.</p>
+                </div>
+                <button><a href="#sellers">SHOP NOW</a><i class='bx bx-right-arrow-alt'></i></button>
+                <div class="home_social_icons">
+                    <a href="#"><i class='bx bxl-facebook'></i></a>
+                    <a href="#"><i class='bx bxl-twitter'></i></a>
+                    <a href="#"><i class='bx bxl-pinterest'></i></a>
+                    <a href="#"><i class='bx bxl-instagram'></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="collection">
+        <div class="collections container">
+            <div class="content">
+                <img src="https://i.postimg.cc/Xqmwr12c/clothing.webp" alt="img" />
+                <div class="img-content">
+                    <p>Clothing Collections</p>
+                    <button><a href="#sellers">SHOP NOW</a></button>
+                </div>
+            </div>
+            <div class="content2">
+                <img src="https://i.postimg.cc/8CmBZH5N/shoes.webp" alt="img" />
+                <div class="img-content2">
+                    <p>Shoes Spring</p>
+                    <button><a href="#sellers">SHOP NOW</a></button>
+                </div>
+            </div>
+            <div class="content3">
+                <img src="https://i.postimg.cc/MHv7KJYp/access.webp" alt="img" />
+                <div class="img-content3">
+                    <p>Accessories</p>
+                    <button><a href="#sellers">SHOP NOW</a></button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section id="sellers">
+        <div class="seller container">
+            <h2>Top Sales</h2>
+            <div class="best-seller">
+                <div class="best-p1">
+                    <img src="https://i.postimg.cc/8CmBZH5N/shoes.webp" alt="img">
+                    <div class="best-p1-txt">
+                        <div class="name-of-p">
+                            <p>PS England Shoes</p>
+                        </div>
+                        <div class="rating">
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bx-star'></i>
+                            <i class='bx bx-star'></i>
+                        </div>
+                        <div class="price">
+                            ₹3,090
+                            <div class="colors">
+                                <i class='bx bxs-circle red'></i>
+                                <i class='bx bxs-circle blue'></i>
+                                <i class='bx bxs-circle white'></i>
+                            </div>
+                        </div>
+                        <div class="buy-now">
+                            <button><a href="https://codepen.io/sanketbodke/full/mdprZOq">Buy  Now</a></button>
+                        </div>
+                        <!-- <div class="add-cart">
+                            <button>Add To Cart</button>
+                        </div> -->
+                    </div>
+                </div>
+                <div class="best-p1">
+                    <img src="https://i.postimg.cc/76X9ZV8m/Screenshot_from_2022-06-03_18-45-12.png" alt="img">
+                    <div class="best-p1-txt">
+                        <div class="name-of-p">
+                            <p>PS England Jacket</p>
+                        </div>
+                        <div class="rating">
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bx-star'></i>
+                            <i class='bx bx-star'></i>
+                            <i class='bx bx-star'></i>
+                        </div>
+                        <div class="price">
+                            ₹1,430
+                            <div class="colors">
+                                <i class='bx bxs-circle green'></i>
+                                <i class='bx bxs-circle grey'></i>
+                                <i class='bx bxs-circle brown'></i>
+                            </div>
+                        </div>
+                        <div class="buy-now">
+                            <button><a href="https://codepen.io/sanketbodke/full/mdprZOq">Buy  Now</a></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="best-p1">
+                    <img src="https://i.postimg.cc/j2FhzSjf/bs2.png" alt="img">
+                    <div class="best-p1-txt">
+                        <div class="name-of-p">
+                            <p>PS England Shirt</p>
+                        </div>
+                        <div class="rating">
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bx-star'></i>
+                        </div>
+                        <div class="price">
+                           ₹2,260
+                            <div class="colors">
+                                <i class='bx bxs-circle brown'></i>
+                                <i class='bx bxs-circle green'></i>
+                                <i class='bx bxs-circle blue'></i>
+                            </div>
+                        </div>
+                        <div class="buy-now">
+                            <button><a href="https://codepen.io/sanketbodke/full/mdprZOq">Buy  Now</a></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="best-p1">
+                    <img src="https://i.postimg.cc/QtjSDzPF/bs3.png" alt="img">
+                    <div class="best-p1-txt">
+                        <div class="name-of-p">
+                            <p>PS England Shoes</p>
+                        </div>
+                        <div class="rating">
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                        </div>
+                        <div class="price">
+                            ₹3,625
+                            <div class="colors">
+                                <i class='bx bxs-circle red'></i>
+                                <i class='bx bxs-circle grey'></i>
+                                <i class='bx bxs-circle blue'></i>
+                            </div>
+                        </div>
+                        <div class="buy-now">
+                            <button><a href="https://codepen.io/sanketbodke/full/mdprZOq">Buy  Now</a></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="seller container">
+            <h2>New Arrivals</h2>
+            <div class="best-seller">
+                <div class="best-p1">
+                    <img src="https://i.postimg.cc/fbnB2yfj/na1.png" alt="img">
+                    <div class="best-p1-txt">
+                        <div class="name-of-p">
+                            <p>PS England T-Shirt</p>
+                        </div>
+                        <div class="rating">
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                        </div>
+                        <div class="price">
+                            ₹849
+                            <div class="colors">
+                                <i class='bx bxs-circle blank'></i>
+                                <i class='bx bxs-circle blue'></i>
+                                <i class='bx bxs-circle brown'></i>
+                            </div>
+                        </div>
+                        <div class="buy-now">
+                            <button><a href="https://codepen.io/sanketbodke/full/mdprZOq">Buy  Now</a></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="best-p1">
+                    <img src="https://i.postimg.cc/zD02zJq8/na2.png" alt="img">
+                    <div class="best-p1-txt">
+                        <div class="name-of-p">
+                            <p>PS England Bag</p>
+                        </div>
+                        <div class="rating">
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bx-star'></i>
+                            <i class='bx bx-star'></i>
+                            <i class='bx bx-star'></i>
+                            <i class='bx bx-star'></i>
+                        </div>
+                        <div class="price">
+                            ₹770
+                            <div class="colors">
+                                <i class='bx bxs-circle brown'></i>
+                                <i class='bx bxs-circle red'></i>
+                                <i class='bx bxs-circle green'></i>
+                            </div>
+                        </div>
+                        <div class="buy-now">
+                            <button><a href="https://codepen.io/sanketbodke/full/mdprZOq">Buy  Now</a></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="best-p1">
+                    <img src="https://i.postimg.cc/Dfj5VBcz/sunglasses1.jpg" alt="img">
+                    <div class="best-p1-txt">
+                        <div class="name-of-p">
+                            <p>PS England Sunglass</p>
+                        </div>
+                        <div class="rating">
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                        </div>
+                        <div class="price">
+                           ₹518
+                            <div class="colors">
+                                <i class='bx bxs-circle grey'></i>
+                                <i class='bx bxs-circle blank'></i>
+                                <i class='bx bxs-circle blank'></i>
+                            </div>
+                        </div>
+                        <div class="buy-now">
+                            <button><a href="https://codepen.io/sanketbodke/full/mdprZOq">Buy  Now</a></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="best-p1">
+                    <img src="https://i.postimg.cc/FszW12Kc/na4.png" alt="img">
+                    <div class="best-p1-txt">
+                        <div class="name-of-p">
+                            <p>PS England Shoes</p>
+                        </div>
+                        <div class="rating">
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                        </div>
+                        <div class="price">
+                            ₹3,625
+                            <div class="colors">
+                                <i class='bx bxs-circle grey'></i>
+                                <i class='bx bxs-circle red'></i>
+                                <i class='bx bxs-circle blue'></i>
+                            </div>
+                        </div>
+                        <div class="buy-now">
+                            <button><a href="https://codepen.io/sanketbodke/full/mdprZOq">Buy  Now</a></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="seller container">
+            <h2>Hot Sales</h2>
+            <div class="best-seller">
+                <div class="best-p1">
+                    <img src="https://i.postimg.cc/jS7pSQLf/na4.png" alt="img">
+                    <div class="best-p1-txt">
+                        <div class="name-of-p">
+                            <p>PS England Shoes</p>
+                        </div>
+                        <div class="rating">
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                        </div>
+                        <div class="price">
+                            ₹3,090
+                            <div class="colors">
+                                <i class='bx bxs-circle grey'></i>
+                                <i class='bx bxs-circle black'></i>
+                                <i class='bx bxs-circle blue'></i>
+                            </div>
+                        </div>
+                        <div class="buy-now">
+                            <button><a href="https://codepen.io/sanketbodke/full/mdprZOq">Buy  Now</a></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="best-p1">
+                    <img src="https://i.postimg.cc/fbnB2yfj/na1.png" alt="img">
+                    <div class="best-p1-txt">
+                        <div class="name-of-p">
+                            <p>PS England T-Shirt</p>
+                        </div>
+                        <div class="rating">
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                        </div>
+                        <div class="price">
+                           ₹849
+                            <div class="colors">
+                                <i class='bx bxs-circle blank'></i>
+                                <i class='bx bxs-circle blue'></i>
+                                <i class='bx bxs-circle brown'></i>
+                            </div>
+                        </div>
+                        <div class="buy-now">
+                            <button><a href="https://codepen.io/sanketbodke/full/mdprZOq">Buy  Now</a></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="best-p1">
+                    <img src="https://i.postimg.cc/RhVP7YQk/hs1.png" alt="img">
+                    <div class="best-p1-txt">
+                        <div class="name-of-p">
+                            <p>PS England T-Shirt</p>
+                        </div>
+                        <div class="rating">
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                        </div>
+                        <div class="price">
+                            ₹1,264
+                            <div class="colors">
+                                <i class='bx bxs-circle blank'></i>
+                                <i class='bx bxs-circle red'></i>
+                                <i class='bx bxs-circle blue'></i>
+                            </div>
+                        </div>
+                        <div class="buy-now">
+                            <button><a href="https://codepen.io/sanketbodke/full/mdprZOq">Buy  Now</a></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="best-p1">
+                    <img src="https://i.postimg.cc/zD02zJq8/na2.png" alt="img">
+                    <div class="best-p1-txt">
+                        <div class="name-of-p">
+                            <p>PS England Bag</p>
+                        </div>
+                        <div class="rating">
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bx-star'></i>
+                            <i class='bx bx-star'></i>
+                            <i class='bx bx-star'></i>
+                            <i class='bx bx-star'></i>
+                        </div>
+                        <div class="price">
+                            ₹770
+                            <div class="colors">
+                                <i class='bx bxs-circle blank'></i>
+                                <i class='bx bxs-circle grey'></i>
+                                <i class='bx bxs-circle brown'></i>
+                            </div>
+                        </div>
+                        <div class="buy-now">
+                            <button><a href="https://codepen.io/sanketbodke/full/mdprZOq">Buy  Now</a></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section id="news">
+        <div class="news-heading">
+            <p>LATEST NEWS</p>
+            <h2>Fashion New Trends</h2>
+        </div>
+        <div class="l-news container">
+            <div class="l-news1">
+                <div class="news1-img">
+                    <img src="https://i.postimg.cc/2y6wbZCm/news1.jpg" alt="img">
+                </div>
+                <div class="news1-conte">
+                    <div class="date-news1">
+                        <p><i class='bx bxs-calendar'></i> 12 February 2022</p>
+                        <h4>What Curling Irons Are The Best Ones</h4>
+                        <a href="https://www.vogue.com/article/best-curling-irons" target="_blank">read more</a>
+                    </div>
+                </div>
+            </div>
+            <div class="l-news2">
+                <div class="news2-img">
+                    <img src="https://i.postimg.cc/9MXPK7RT/news2.jpg" alt="img">
+                </div>
+                <div class="news2-conte">
+                    <div class="date-news2">
+                        <p><i class='bx bxs-calendar'></i> 17 February 2022</p>
+                        <h4>The Health Benefits Of Sunglasses</h4>
+                        <a href="https://www.rivieraopticare.com/blog/314864-the-health-benefits-of-wearing-sunglasses_2/" target="_blank">read more</a>
+                    </div>
+                </div>
+            </div>
+            <div class="l-news3">
+                <div class="news3-img">
+                    <img src="https://i.postimg.cc/x1KKdRLM/news3.jpg" alt="img">
+                </div>
+                <div class="news3-conte">
+                    <div class="date-news3">
+                        <p><i class='bx bxs-calendar'></i> 26 February 202</p>
+                        <h4>Eternity Bands Do Last Forever</h4>
+                        <a href="https://www.briangavindiamonds.com/news/eternity-bands-symbolize-love-that-lasts-forever/" target="_blank">read more</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- 🌍 Contact Section -->
+<section class="contact" id="contact">
+    <div class="contact-content">
+        <div class="contact-text">
+            <h2>Contact Us</h2>
+            <p>
+                Have any questions, feedback, or business inquiries?  
+                Reach out to our team — we’ll be glad to connect with you.
+            </p>
+        </div>
+
+        <div class="contact-details">
+
+            <!-- 🏢 India HQ Section -->
+            <div class="contact-box">
+                <h3>India HQ</h3>
+                <p>Near Metro Station, Laxmi Nagar, Delhi, India<br>+91 98765-43210</p>
+            </div>
+
+            <!-- 📍 Updated Google Map for Laxmi Nagar -->
+            <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3502.109861014589!2d77.27809247550325!3d28.636690083827106!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390cfd6a52a61a7f%3A0xd2f9461fcd5a44a1!2sLaxmi%20Nagar%2C%20New%20Delhi%2C%20Delhi%20110092!5e0!3m2!1sen!2sin!4v1731518000000!5m2!1sen!2sin" 
+                width="600" 
+                height="450" 
+                style="border:0;" 
+                allowfullscreen="" 
+                loading="lazy" 
+                referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+
+            <!-- 🏢 Optional Local Branch Section -->
+            <div class="contact-box">
+                <h3>India Branch</h3>
+                <p>HW95+C9C, Lorem ipsum dolor sit.<br>411014</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <footer>
+        <div class="footer-container container">
+            <div class="content_1">
+                <img src="https://i.postimg.cc/htGyQ4JB/footer-logo.png" alt="logo">
+                <p>The customer is at the heart of our<br>unique business model, which includes<br>design.</p>
+                <img src="https://i.postimg.cc/Nj9dgJ98/cards.png" alt="cards">
+            </div>
+            <div class="content_2">
+                <h4>SHOPPING</h4>
+                <a href="#sellers">Clothing Store</a>
+                <a href="#sellers">Trending Shoes</a>
+                <a href="#sellers">Accessories</a>
+                <a href="#sellers">Sale</a>
+            </div>
+            <div class="content_3">
+                <h4>SHOPPING</h4>
+                <a href="./contact.html">Contact Us</a>
+                <a href="https://payment-method-sb.netlify.app/" target="_blank">Payment Method</a>
+                <a href="https://delivery-status-sb.netlify.app/" target="_blank">Delivery</a>
+                <a href="https://codepen.io/sandeshbodake/full/Jexxrv" target="_blank">Return and Exchange</a>
+            </div>
+            <div class="content_4">
+                <h4>NEWLETTER</h4>
+                <p>Be the first to know about new<br>arrivals, look books, sales & promos!</p>
+                <div class="f-mail">
+                    <input type="email" placeholder="Your Email">
+                    <i class='bx bx-envelope'></i>
+                </div>
+                <hr>
+            </div>
+        </div>
+        <div class="f-design">
+            <div class="f-design-txt container">
+                <p>Design and Code by code.sanket</p>
+            </div>
+        </div>
+    </footer>
+    <!-- 
+      CHATBOT HTML 
+      You can copy this section and paste it right before the </body> tag in your main HTML file.
+    -->
+
+    <!-- Chat Toggle Button -->
+    <div class="chat-toggle" id="chat-toggle">
+        <i class='bx bx-message-rounded-dots'></i>
+    </div>
+
+    <!-- Chat Window -->
+    <div class="chat-window" id="chat-window">
+        <!-- Header -->
+        <div class="chat-header">
+            <h4>How can we help?</h4>
+            <i class='bx bx-x chat-close' id="chat-close"></i>
+        </div>
+
+        <!-- Message Body -->
+        <div class="chat-body" id="chat-body">
+            <!-- Initial Bot Message -->
+            <div class="chat-message bot">
+                <div class="bubble">
+                    Hi there! 👋 Ask me about our products, shipping, or return policy.
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer (Input) -->
+        <div class="chat-footer">
+            <input type="text" id="chat-input" placeholder="Type your message...">
+            <button class="chat-send" id="chat-send">
+                <i class='bx bxs-send'></i>
+            </button>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get DOM elements
+            const toggleButton = document.getElementById('chat-toggle');
+            const closeButton = document.getElementById('chat-close');
+            const chatWindow = document.getElementById('chat-window');
+            const sendButton = document.getElementById('chat-send');
+            const chatInput = document.getElementById('chat-input');
+            const chatBody = document.getElementById('chat-body');
+
+            // --- Event Listeners ---
+
+            // Toggle chat window open
+            toggleButton.addEventListener('click', () => {
+                chatWindow.classList.toggle('open');
+            });
+
+            // Toggle chat window closed
+            closeButton.addEventListener('click', () => {
+                chatWindow.classList.remove('open');
+            });
+
+            // Send message on button click
+            sendButton.addEventListener('click', handleSendMessage);
+
+            // Send message on 'Enter' key press
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleSendMessage();
+                }
+            });
+
+            // --- Functions ---
+
+            /**
+             * Handles sending the user's message.
+             */
+            function handleSendMessage() {
+                const messageText = chatInput.value.trim();
+                if (messageText === '') return; // Don't send empty messages
+
+                // Display user's message
+                displayMessage(messageText, 'user');
+
+                // Clear the input field
+                chatInput.value = '';
+
+                // Simulate bot response
+                setTimeout(() => {
+                    getBotResponse(messageText);
+                }, 1000); // Wait 1 second
+            }
+
+            /**
+             * Creates and appends a message bubble to the chat body.
+             * @param {string} text - The message content.
+             * @param {string} sender - 'user' or 'bot'.
+             */
+            function displayMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('chat-message', sender);
+
+                const bubbleDiv = document.createElement('div');
+                bubbleDiv.classList.add('bubble');
+                bubbleDiv.textContent = text;
+
+                messageDiv.appendChild(bubbleDiv);
+                chatBody.appendChild(messageDiv);
+
+                // Auto-scroll to the bottom
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+
+            /**
+             * Generates a bot response based on the user's message.
+             * @param {string} userMessage - The user's input.
+             */
+            function getBotResponse(userMessage) {
+                const lowerMessage = userMessage.toLowerCase();
+                let botMessage = "I'm sorry, I don't understand that. You can ask me about shipping, returns, or products.";
+
+                // Simple keyword-based AI
+                if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
+                    botMessage = "Hi there! How can I help you today?";
+                } 
+                else if (lowerMessage.includes('shipping')) {
+                    // This response is based on your site's header!
+                    botMessage = "We offer free shipping on all orders! You can shop with peace of mind.";
+                } 
+                else if (lowerMessage.includes('return') || lowerMessage.includes('refund')) {
+                    // This response is also from your site's header!
+                    botMessage = "We have a 30-day return or refund guarantee. If you're not satisfied, we'll make it right.";
+                } 
+                else if (lowerMessage.includes('shop') || lowerMessage.includes('product')) {
+                    botMessage = "You can browse all our products on the 'Shop' page. Our new collection just dropped!";
+                } 
+                else if (lowerMessage.includes('contact') || lowerMessage.includes('support')) {
+                    botMessage = "You can find all our contact details on the 'Contact' page. We're happy to help!";
+                } 
+                else if (lowerMessage.includes('bye')) {
+                    botMessage = "Goodbye! Have a great day.";
+                }
+
+                // Display the bot's message
+                displayMessage(botMessage, 'bot');
+            }
+        });
+    </script>
+
+</body>
+
+</html>
